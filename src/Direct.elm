@@ -34,7 +34,15 @@ update action model =
 view : Model -> Html Action
 view model =
   div []
-  [ div [class "well content direct"] []
+  [ div [class "well content direct", style containerStyles] []
+  ]
+
+containerStyles : List (String, String)
+containerStyles =
+  [("height", "700px")
+  ,("width", "600px")
+  ,("overflow", "auto")
+  ,("border", "1px black solid")
   ]
 
 -- SUBSCRIPTIONS
