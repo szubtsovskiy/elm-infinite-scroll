@@ -3,6 +3,7 @@ module Direct exposing (main)
 import Html exposing (..)
 import Html.App as App
 import Html.Events exposing (onClick)
+import Html.Attributes exposing (..)
 import Random
 
 main =
@@ -14,32 +15,36 @@ main =
     }
 
 type alias Model =
-  { dieFace : Int
+  { items : List String
   }
 
 type Action
-  = Roll
-  | NewFace Int
+  = FetchOne
+
+-- UPDATE
 
 update : Action -> Model -> (Model, Cmd Action)
 update action model =
   case action of
-    Roll ->
-      (model, Random.generate NewFace (Random.int 1 6))
-    NewFace face ->
-      ({ model | dieFace = face }, Cmd.none)
+    FetchOne ->
+      (model, Cmd.none)
+
+-- VIEW
 
 view : Model -> Html Action
 view model =
   div []
-  [ h1 [] [ text(toString model.dieFace) ]
-  , button [ onClick Roll ]  [ text "Roll" ]
+  [ div [class "well content direct"] []
   ]
+
+-- SUBSCRIPTIONS
 
 subscriptions : Model -> Sub Action
 subscriptions model =
   Sub.none
 
+-- INIT
+
 init : (Model, Cmd Action)
 init =
-  (Model 1, Cmd.none)
+  (Model [], Cmd.none)
