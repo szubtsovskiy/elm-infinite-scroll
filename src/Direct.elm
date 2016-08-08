@@ -2,7 +2,7 @@ module Direct exposing (main)
 
 import Html exposing (..)
 import Html.App as App
-import Html.Events exposing (onClick)
+import Html.Events exposing (onClick, on)
 import Html.Attributes exposing (..)
 import Http
 import Task
@@ -22,10 +22,17 @@ type alias Model =
   { items : List String
   }
 
+type alias Pos =
+  { scrollTop : Int
+  , contentHeight : Int
+  , containerHeight : Int
+  }
+
 type Action
   = FetchItems Int Bool
     | FetchSucceed String
     | FetchFail Http.Error
+    | Scroll Pos
 
 -- UPDATE
 
@@ -43,6 +50,13 @@ update action model =
       let
         _ =
           Debug.log "Error: " (toString err)
+      in
+        (model, Cmd.none)
+
+    Scroll {scrollTop, contentHeight, containerHeight} ->
+      let
+        _ =
+          Debug.log "Scroll: " (toString (scrollTop, contentHeight, containerHeight))
       in
         (model, Cmd.none)
 
@@ -65,12 +79,23 @@ decodeLoremIpsum =
 view : Model -> Html Action
 view model =
   div []
-  [ div [class "well content direct", style containerStyles] (map htmlP model.items)
+  [ div [class "well content direct", style containerStyles, onScroll Scroll] (map para model.items)
   ]
 
-htmlP : String -> Html Action
-htmlP content =
+para : String -> Html Action
+para content =
   p [] [text content]
+
+onScroll : (Pos -> action) -> Attribute action
+onScroll tagger =
+  on "scroll" (Json.map tagger decodeScrollPosition)
+
+decodeScrollPosition : Json.Decoder Pos
+decodeScrollPosition =
+  Json.object3 Pos
+    (Json.at ["target", "scrollTop"] Json.int)
+    (Json.at ["target", "scrollHeight"] Json.int)
+    (Json.at ["target", "offsetHeight"] Json.int) -- TODO: should be max(offsetHeight, clientHeight)
 
 containerStyles : List (String, String)
 containerStyles =
