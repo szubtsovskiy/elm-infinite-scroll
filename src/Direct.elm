@@ -30,7 +30,7 @@ type alias Pos =
 
 type Action
   = FetchItems Int Bool
-    | FetchSucceed String
+    | FetchSucceed (List String)
     | FetchFail Http.Error
     | Scroll Pos
 
@@ -48,9 +48,8 @@ update action model =
     FetchItems amount startWithLoremIpsum ->
       (model, fetchLoremIpsum amount startWithLoremIpsum)
 
-    FetchSucceed lipsum ->
-      ({model | items = model.items ++ (split "\n" lipsum)}, Cmd.none)
-
+    FetchSucceed items ->
+      ({model | items = model.items ++ items}, Cmd.none)
 
     FetchFail err ->
       let
@@ -79,8 +78,12 @@ fetchLoremIpsum amount startWithLoremIpsum =
     Task.perform FetchFail FetchSucceed (Http.get decodeLoremIpsum url)
 
 
-decodeLoremIpsum : Json.Decoder String
+decodeLoremIpsum : Json.Decoder (List String)
 decodeLoremIpsum =
+  Json.object1 (split "\n") lipsum
+
+lipsum : Json.Decoder String
+lipsum =
   Json.at [ "feed", "lipsum" ] Json.string
 
 -- VIEW
@@ -108,19 +111,19 @@ decodeScrollPosition =
 
 scrollTop : Json.Decoder Int
 scrollTop =
-  Json.at ["target", "scrollTop"] Json.int
+  Json.at [ "target", "scrollTop" ] Json.int
 
 scrollHeight : Json.Decoder Int
 scrollHeight =
-  Json.at ["target", "scrollHeight"] Json.int
+  Json.at [ "target", "scrollHeight" ] Json.int
 
 offsetHeight : Json.Decoder Int
 offsetHeight =
-  Json.at ["target", "offsetHeight"] Json.int
+  Json.at [ "target", "offsetHeight" ] Json.int
 
 clientHeight : Json.Decoder Int
 clientHeight =
-  Json.at ["target", "clientHeight"] Json.int
+  Json.at [ "target", "clientHeight" ] Json.int
 
 maxInt : Json.Decoder Int -> Json.Decoder Int -> Json.Decoder Int
 maxInt x y =
