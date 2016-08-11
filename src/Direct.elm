@@ -23,7 +23,7 @@ type alias Model =
   }
 
 type alias Pos =
-  { scrollTop : Int
+  { scrolledHeight : Int
   , contentHeight : Int
   , containerHeight : Int
   }
@@ -35,6 +35,12 @@ type Action
     | Scroll Pos
 
 -- UPDATE
+
+-- TODO next: loading icon
+-- TODO next: scrollable component
+-- TODO next: reversed version
+-- TODO next: how to handle decoding errors (e.g. when field does not exist)
+-- TODO next: tabbed component (new project)
 
 update : Action -> Model -> (Model, Cmd Action)
 update action model =
@@ -53,12 +59,15 @@ update action model =
       in
         (model, Cmd.none)
 
-    Scroll {scrollTop, contentHeight, containerHeight} ->
+    Scroll {scrolledHeight, contentHeight, containerHeight} ->
       let
-        _ =
-          Debug.log "Scroll: " (toString (scrollTop, contentHeight, containerHeight))
+        excessHeight = contentHeight - containerHeight
       in
-        (model, Cmd.none)
+        if scrolledHeight >= excessHeight then
+          (model, fetchLoremIpsum 1 False)
+        else
+          (model, Cmd.none)
+
 
 fetchLoremIpsum : Int -> Bool -> Cmd Action
 fetchLoremIpsum amount startWithLoremIpsum =
@@ -93,9 +102,29 @@ onScroll tagger =
 decodeScrollPosition : Json.Decoder Pos
 decodeScrollPosition =
   Json.object3 Pos
-    (Json.at ["target", "scrollTop"] Json.int)
-    (Json.at ["target", "scrollHeight"] Json.int)
-    (Json.at ["target", "offsetHeight"] Json.int) -- TODO: should be max(offsetHeight, clientHeight)
+    scrollTop
+    scrollHeight
+    (maxInt offsetHeight clientHeight)
+
+scrollTop : Json.Decoder Int
+scrollTop =
+  Json.at ["target", "scrollTop"] Json.int
+
+scrollHeight : Json.Decoder Int
+scrollHeight =
+  Json.at ["target", "scrollHeight"] Json.int
+
+offsetHeight : Json.Decoder Int
+offsetHeight =
+  Json.at ["target", "offsetHeight"] Json.int
+
+clientHeight : Json.Decoder Int
+clientHeight =
+  Json.at ["target", "clientHeight"] Json.int
+
+maxInt : Json.Decoder Int -> Json.Decoder Int -> Json.Decoder Int
+maxInt x y =
+  Json.object2 Basics.max x y
 
 containerStyles : List (String, String)
 containerStyles =
