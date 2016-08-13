@@ -37,7 +37,6 @@ type Action
 -- UPDATE
 
 -- TODO next: loading icon
--- TODO next: scrollable component
 -- TODO next: reversed version
 -- TODO next: how to handle decoding errors (e.g. when field does not exist)
 -- TODO next: tabbed component (new project)
