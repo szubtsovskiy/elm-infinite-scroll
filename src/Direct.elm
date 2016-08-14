@@ -90,7 +90,10 @@ lipsum =
 view : Model -> Html Action
 view model =
   div []
-  [ div [class "well content direct", style containerStyles, onScroll Scroll] (map para model.items)
+  [ div [ class "well content direct", style containerStyles, onScroll Scroll ] (map para model.items)
+  , div [ style loaderIconContainerStyles ]
+    [ span [ class "fa fa-spinner fa-pulse fa-2x", style loaderIconStyles ] [ text " " ]
+    ]
   ]
 
 para : String -> Html Action
@@ -130,10 +133,22 @@ maxInt x y =
 
 containerStyles : List (String, String)
 containerStyles =
-  [("height", "700px")
-  ,("width", "600px")
-  ,("overflow", "auto")
-  ,("border", "1px black solid")
+  [ ("height", "700px")
+  , ("overflow", "auto")
+  , ("border", "1px black solid")
+  ]
+
+loaderIconContainerStyles : List (String, String)
+loaderIconContainerStyles =
+  [ ("border", "1px blue solid")
+  , ("height", "40px")
+  , ("display", "flex")
+  ]
+
+loaderIconStyles : List (String, String)
+loaderIconStyles =
+  [ ("display", "flex")
+  , ("margin", "auto")
   ]
 
 -- SUBSCRIPTIONS
