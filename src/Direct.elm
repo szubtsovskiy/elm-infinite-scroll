@@ -9,6 +9,7 @@ import Task
 import Json.Decode as Json
 import String exposing (split)
 import List exposing (map)
+import AjaxLoader
 
 main =
   App.program
@@ -20,6 +21,7 @@ main =
 
 type alias Model =
   { items : List String
+  , loader : AjaxLoader.Model
   }
 
 type alias Pos =
@@ -30,9 +32,10 @@ type alias Pos =
 
 type Action
   = FetchItems Int Bool
-    | FetchSucceed (List String)
-    | FetchFail Http.Error
-    | Scroll Pos
+  | FetchSucceed (List String)
+  | FetchFail Http.Error
+  | Scroll Pos
+  | LoaderNoOp AjaxLoader.Action
 
 -- UPDATE
 
@@ -66,6 +69,9 @@ update action model =
         else
           (model, Cmd.none)
 
+    LoaderNoOp _ ->
+      (model, Cmd.none)
+
 
 fetchLoremIpsum : Int -> Bool -> Cmd Action
 fetchLoremIpsum amount startWithLoremIpsum =
@@ -91,9 +97,7 @@ view : Model -> Html Action
 view model =
   div []
   [ div [ class "well content direct", style containerStyles, onScroll Scroll ] (map para model.items)
-  , div [ style loaderIconContainerStyles ]
-    [ span [ class "fa fa-spinner fa-pulse fa-2x", style loaderIconStyles ] [ text " " ]
-    ]
+  , App.map LoaderNoOp (AjaxLoader.view model.loader)
   ]
 
 para : String -> Html Action
@@ -138,19 +142,6 @@ containerStyles =
   , ("border", "1px black solid")
   ]
 
-loaderIconContainerStyles : List (String, String)
-loaderIconContainerStyles =
-  [ ("border", "1px blue solid")
-  , ("height", "40px")
-  , ("display", "flex")
-  ]
-
-loaderIconStyles : List (String, String)
-loaderIconStyles =
-  [ ("display", "flex")
-  , ("margin", "auto")
-  ]
-
 -- SUBSCRIPTIONS
 
 subscriptions : Model -> Sub Action
@@ -161,4 +152,4 @@ subscriptions model =
 
 init : (Model, Cmd Action)
 init =
-  (Model [], fetchLoremIpsum 7 True)
+  (Model [] (AjaxLoader.init False), fetchLoremIpsum 7 True)
