@@ -38,7 +38,7 @@ type Action
 
 -- UPDATE
 
--- TODO next: loading icon
+-- TODO next: elm-webpack-starter
 -- TODO next: reversed version
 -- TODO next: how to handle decoding errors (e.g. when field does not exist)
 -- TODO next: tabbed component (new project)
@@ -91,10 +91,13 @@ lipsum =
 
 view : Model -> Html Action
 view model =
-  div []
-  [ div [ class "well content direct", onScroll Scroll ] (map para model.items)
-  , App.map LoaderNoOp (AjaxLoader.view model.loader)
-  ]
+  let
+    paras = map para model.items
+    loader = App.map LoaderNoOp (AjaxLoader.view model.loader)
+  in
+    div []
+    [ div [ class "well content direct", onScroll Scroll ] (paras ++ [loader])
+    ]
 
 para : String -> Html Action
 para content =
