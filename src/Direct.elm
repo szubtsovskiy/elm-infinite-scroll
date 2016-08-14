@@ -31,8 +31,7 @@ type alias Pos =
   }
 
 type Action
-  = FetchItems Int Bool
-  | FetchSucceed (List String)
+  = FetchSucceed (List String)
   | FetchFail Http.Error
   | Scroll Pos
   | LoaderNoOp AjaxLoader.Action
@@ -47,25 +46,22 @@ type Action
 update : Action -> Model -> (Model, Cmd Action)
 update action model =
   case action of
-    FetchItems amount startWithLoremIpsum ->
-      (model, fetchLoremIpsum amount startWithLoremIpsum)
-
     FetchSucceed items ->
-      ({model | items = model.items ++ items}, Cmd.none)
+      ({ model | items = model.items ++ items, loader = AjaxLoader.hide model.loader }, Cmd.none)
 
     FetchFail err ->
       let
         _ =
           Debug.log "Error: " (toString err)
       in
-        (model, Cmd.none)
+        ({ model | loader = AjaxLoader.hide model.loader }, Cmd.none)
 
     Scroll {scrolledHeight, contentHeight, containerHeight} ->
       let
         excessHeight = contentHeight - containerHeight
       in
         if scrolledHeight >= excessHeight then
-          (model, fetchLoremIpsum 1 False)
+          ({ model | loader = AjaxLoader.show model.loader }, fetchLoremIpsum 1 False)
         else
           (model, Cmd.none)
 
@@ -96,7 +92,7 @@ lipsum =
 view : Model -> Html Action
 view model =
   div []
-  [ div [ class "well content direct", style containerStyles, onScroll Scroll ] (map para model.items)
+  [ div [ class "well content direct", onScroll Scroll ] (map para model.items)
   , App.map LoaderNoOp (AjaxLoader.view model.loader)
   ]
 
@@ -135,13 +131,6 @@ maxInt : Json.Decoder Int -> Json.Decoder Int -> Json.Decoder Int
 maxInt x y =
   Json.object2 Basics.max x y
 
-containerStyles : List (String, String)
-containerStyles =
-  [ ("height", "700px")
-  , ("overflow", "auto")
-  , ("border", "1px black solid")
-  ]
-
 -- SUBSCRIPTIONS
 
 subscriptions : Model -> Sub Action
@@ -152,4 +141,4 @@ subscriptions model =
 
 init : (Model, Cmd Action)
 init =
-  (Model [] (AjaxLoader.init False), fetchLoremIpsum 7 True)
+  ({ items = [], loader = AjaxLoader.init True }, fetchLoremIpsum 17 True)

@@ -41,7 +41,7 @@ hide model =
 view : Model -> Html Action
 view model =
   div [ style (loaderIconContainerStyles model.visible) ]
-  [ span [ class "fa fa-spinner fa-pulse fa-2x", style loaderIconStyles ] [ text "..." ]
+  [ span [ class "fa fa-spinner fa-pulse fa-2x", style loaderIconStyles ] [ text " " ]
   ]
 
 
