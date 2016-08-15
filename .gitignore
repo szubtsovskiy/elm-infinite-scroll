@@ -6,3 +6,5 @@ repl-temp-*
 
 # generated files
 dist
+
+tmp
