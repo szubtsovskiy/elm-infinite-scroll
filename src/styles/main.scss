@@ -1,0 +1,40 @@
+$icon-font-path: '~bootstrap-sass/assets/fonts/bootstrap/';
+@import '~bootstrap-sass/assets/stylesheets/bootstrap/_mixins.scss';
+@import '~bootstrap-sass/assets/stylesheets/_bootstrap.scss';
+
+body {
+  margin: 20px 0;
+}
+
+.content {
+  height: 700px;
+  width: 100%;
+  overflow: auto;
+}
+
+.content.direct p:last-child {
+  margin-bottom: 40px;
+}
+
+.content.reversed p:first-child {
+  margin-top: 40px;
+}
+
+
+/*#loader-icon-direct {*/
+/*position: absolute;*/
+/*width: 100%;*/
+/*left: 0;*/
+/*bottom: 30px;*/
+/*text-align: center;*/
+/*display: none;*/
+/*}*/
+
+/*#loader-icon-reversed {*/
+/*position: absolute;*/
+/*width: 100%;*/
+/*left: 0;*/
+/*top: 50px;*/
+/*text-align: center;*/
+/*display: none;*/
+/*}    */
