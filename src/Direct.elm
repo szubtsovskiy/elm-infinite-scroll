@@ -38,7 +38,7 @@ type Action
 
 -- UPDATE
 
--- TODO next: elm-webpack-starter: restore loader icon
+-- TODO next: investigate CSS modules
 -- TODO next: reversed version
 -- TODO next: how to handle decoding errors (e.g. when field does not exist)
 -- TODO next: tabbed component (new project)
