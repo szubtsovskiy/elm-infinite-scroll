@@ -71,6 +71,17 @@ if (TARGET_ENV === 'development') {
         },
         {
           test: /\.(css|scss)$/,
+          exclude: p => p.startsWith(path.resolve('src/styles/main.scss')),
+          loaders: [
+            'style-loader',
+            'css-loader?modules&localIdentName=[name]__[local]',
+            'postcss-loader',
+            'sass-loader'
+          ]
+        },
+        {
+          test: /\.(css|scss)$/,
+          include: p => p.startsWith(path.resolve('src/styles/main.scss')),
           loaders: [
             'style-loader',
             'css-loader',
