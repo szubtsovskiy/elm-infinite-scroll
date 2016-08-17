@@ -34,7 +34,7 @@ update action model =
 view : Model -> Html Action
 view model =
   div []
-  [ div [class "well content reversed"] []
+  [ div [class "well content reversed"] [ text "Reversed version" ]
   ]
 
 -- SUBSCRIPTIONS

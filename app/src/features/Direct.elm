@@ -6,22 +6,31 @@ import Html.Events exposing (onClick, on)
 import Html.Attributes exposing (..)
 import Http
 import Task
+import Platform exposing (Program)
 import Json.Decode as Json
 import String exposing (split)
 import List exposing (map)
 import AjaxLoader
 
+main : Program Styles
 main =
-  App.program
+  App.programWithFlags
     { init = init
     , view = view
     , update = update
     , subscriptions = subscriptions
     }
 
+type alias Styles =
+  { container : String
+  , loaderIconContainer : String
+  , loaderIcon : String
+  }
+
 type alias Model =
   { items : List String
   , loader : AjaxLoader.Model
+  , styles : Styles
   }
 
 type alias Pos =
@@ -38,7 +47,6 @@ type Action
 
 -- UPDATE
 
--- TODO next: elm-webpack-starter
 -- TODO next: reversed version
 -- TODO next: how to handle decoding errors (e.g. when field does not exist)
 -- TODO next: tabbed component (new project)
@@ -94,9 +102,10 @@ view model =
   let
     paras = map para model.items
     loader = App.map LoaderNoOp (AjaxLoader.view model.loader)
+    styles = model.styles
   in
     div []
-    [ div [ class "well content direct", onScroll Scroll ] (paras ++ [loader])
+    [ div [ class styles.container, onScroll Scroll ] (paras ++ [loader])
     ]
 
 para : String -> Html Action
@@ -142,6 +151,13 @@ subscriptions model =
 
 -- INIT
 
-init : (Model, Cmd Action)
-init =
-  ({ items = [], loader = AjaxLoader.init True }, fetchLoremIpsum 17 True)
+init : Styles -> (Model, Cmd Action)
+init styles =
+  let
+    model =
+      { items = []
+      , loader = AjaxLoader.init True (AjaxLoader.Styles styles.loaderIconContainer styles.loaderIcon)
+      , styles = styles
+      }
+  in
+    (model, fetchLoremIpsum 17 True)

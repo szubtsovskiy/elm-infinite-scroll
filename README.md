@@ -11,13 +11,25 @@ Elm application featuring infinite scroll implementation
 
 * Elm 0.17.1-0.18.0
 
-# Running
+# Development
 
 ```
-elm make src/* --output=dist/application.js
+npm start
 ```
 
-Open `index.html` in the browser.
+Application will be accessible at http://localhost:8080. Code changes will be automatically reloaded.
+
+# Production
+
+```
+npm run build
+```
+
+Check then the `dist` folder.
+
+# Credits
+
+Peter Morawiec, for [elm-webpack-starter](https://github.com/moarwick/elm-webpack-starter).
 
 # License
 
