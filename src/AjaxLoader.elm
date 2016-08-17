@@ -1,14 +1,17 @@
-module AjaxLoader exposing (Model, Action, init, show, hide, view)
-import Html.App as App
+module AjaxLoader exposing (Styles, Model, Action, init, show, hide, view)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 
-main = App.beginnerProgram { model = init True, view = view, update = update }
-
 -- MODEL
+
+type alias Styles =
+  { container : String
+  , icon : String
+  }
 
 type alias Model =
   { visible : Bool
+  , styles : Styles
   }
 
 type Action
@@ -40,25 +43,27 @@ hide model =
 
 view : Model -> Html Action
 view model =
-  div [ style (loaderIconContainerStyles model.visible) ]
-  [ span [ class "fa fa-spinner fa-pulse fa-2x", style loaderIconStyles ] [ text " " ]
+  let
+    styles = model.styles
+    visible = model.visible
+  in
+    div [ class styles.container, style (containerStyles visible) ]
+    [ span [ class styles.icon, style iconStyles ] [ text " " ]
+    ]
+
+containerStyles : Bool -> List (String, String)
+containerStyles visible =
+  [ ("display", if visible then "flex" else "none")
   ]
 
-
-loaderIconContainerStyles visible =
-  [ ("height", "40px")
-  , ("display", if visible then "flex" else "none")
-  ]
-
-
-loaderIconStyles : List (String, String)
-loaderIconStyles =
+iconStyles : List (String, String)
+iconStyles =
   [ ("display", "flex")
   , ("margin", "auto")
   ]
 
 -- INIT
 
-init : Bool -> Model
-init visible =
-  Model visible
+init : Bool -> Styles -> Model
+init visible styles =
+  Model visible styles

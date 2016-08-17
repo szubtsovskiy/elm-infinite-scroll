@@ -2,6 +2,9 @@
 @import "~bootstrap-sass/assets/stylesheets/bootstrap/mixins/vendor-prefixes";
 @import "~bootstrap-sass/assets/stylesheets/bootstrap/wells";
 
+$fa-font-path: 'font-awesome/fonts';
+@import '~font-awesome/scss/font-awesome';
+
 .container {
   @extend .well;
 
@@ -12,4 +15,12 @@
   p:last-child {
     margin-bottom: 40px;
   }
+}
+
+.loaderIconContainer {
+  height: 40px;
+}
+
+.loaderIcon {
+  @extend .fa, .fa-spinner, .fa-spin, .fa-2x;
 }

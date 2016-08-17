@@ -23,6 +23,8 @@ main =
 
 type alias Styles =
   { container : String
+  , loaderIconContainer : String
+  , loaderIcon : String
   }
 
 type alias Model =
@@ -45,7 +47,7 @@ type Action
 
 -- UPDATE
 
--- TODO next: investigate CSS modules
+-- TODO next: app/styles - global styles, app/src/features
 -- TODO next: production section in webpack config
 -- TODO next: README
 -- TODO next: reversed version
@@ -154,4 +156,11 @@ subscriptions model =
 
 init : Styles -> (Model, Cmd Action)
 init styles =
-  ({ items = [], loader = AjaxLoader.init True, styles = styles }, fetchLoremIpsum 17 True)
+  let
+    model =
+      { items = []
+      , loader = AjaxLoader.init True (AjaxLoader.Styles styles.loaderIconContainer styles.loaderIcon)
+      , styles = styles
+      }
+  in
+    (model, fetchLoremIpsum 17 True)
