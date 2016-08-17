@@ -112,6 +112,16 @@ if (TARGET_ENV === 'production') {
         },
         {
           test: /\.(css|scss)$/,
+          exclude: p => p.startsWith(path.resolve('app/styles')),
+          loader: ExtractTextPlugin.extract('style-loader', [
+            'css-loader?modules&localIdentName=[name]__[local]',
+            'postcss-loader',
+            'sass-loader'
+          ])
+        },
+        {
+          test: /\.(css|scss)$/,
+          include: p => p.startsWith(path.resolve('app/styles')),
           loader: ExtractTextPlugin.extract('style-loader', [
             'css-loader',
             'postcss-loader',

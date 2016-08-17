@@ -47,8 +47,6 @@ type Action
 
 -- UPDATE
 
--- TODO next: production section in webpack config
--- TODO next: README
 -- TODO next: reversed version
 -- TODO next: how to handle decoding errors (e.g. when field does not exist)
 -- TODO next: tabbed component (new project)
