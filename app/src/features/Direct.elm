@@ -47,7 +47,6 @@ type Action
 
 -- UPDATE
 
--- TODO next: app/styles - global styles, app/src/features
 -- TODO next: production section in webpack config
 -- TODO next: README
 -- TODO next: reversed version

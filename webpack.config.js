@@ -36,7 +36,7 @@ var commonConfig = {
 
   plugins: [
     new HtmlWebpackPlugin({
-      template: 'src/index.html',
+      template: 'app/src/index.html',
       inject: 'body',
       filename: 'index.html'
     })
@@ -54,7 +54,7 @@ if (TARGET_ENV === 'development') {
 
     entry: [
       'webpack-dev-server/client?http://localhost:8080',
-      path.join(__dirname, 'src/index.js')
+      path.join(__dirname, 'app/src/index.js')
     ],
 
     devServer: {
@@ -71,7 +71,7 @@ if (TARGET_ENV === 'development') {
         },
         {
           test: /\.(css|scss)$/,
-          exclude: p => p.startsWith(path.resolve('src/styles/main.scss')),
+          exclude: p => p.startsWith(path.resolve('app/styles')),
           loaders: [
             'style-loader',
             'css-loader?modules&localIdentName=[name]__[local]',
@@ -81,7 +81,7 @@ if (TARGET_ENV === 'development') {
         },
         {
           test: /\.(css|scss)$/,
-          include: p => p.startsWith(path.resolve('src/styles/main.scss')),
+          include: p => p.startsWith(path.resolve('app/styles')),
           loaders: [
             'style-loader',
             'css-loader',
@@ -101,7 +101,7 @@ if (TARGET_ENV === 'production') {
 
   module.exports = merge(commonConfig, {
 
-    entry: path.join(__dirname, 'src/index.js'),
+    entry: path.join(__dirname, 'app/src/index.js'),
 
     module: {
       loaders: [
@@ -124,11 +124,11 @@ if (TARGET_ENV === 'production') {
     plugins: [
       new CopyWebpackPlugin([
         {
-          from: 'src/img/',
-          to: 'img/'
+          from: 'app/images/',
+          to: 'images/'
         },
         {
-          from: 'src/favicon.ico'
+          from: 'app/images/favicon.ico'
         },
       ]),
 
