@@ -4,13 +4,11 @@ import Html exposing (..)
 import Html.App as App
 import Html.Events exposing (onClick, on)
 import Html.Attributes exposing (..)
-import Http
-import Task
 import Platform exposing (Program)
 import Json.Decode as Json
-import String exposing (split)
 import List exposing (map)
 import AjaxLoader
+import LoremIpsum
 
 main : Program Styles
 main =
@@ -40,8 +38,7 @@ type alias Pos =
   }
 
 type Action
-  = FetchSucceed (List String)
-  | FetchFail Http.Error
+  = ReceiveLoremIpsum LoremIpsum.Action
   | Scroll Pos
   | LoaderNoOp AjaxLoader.Action
 
@@ -49,51 +46,33 @@ type Action
 
 -- TODO next: reversed version
 -- TODO next: how to handle decoding errors (e.g. when field does not exist)
--- TODO next: tabbed component (new project)
 
 update : Action -> Model -> (Model, Cmd Action)
 update action model =
   case action of
-    FetchSucceed items ->
-      ({ model | items = model.items ++ items, loader = AjaxLoader.hide model.loader }, Cmd.none)
-
-    FetchFail err ->
-      let
-        _ =
-          Debug.log "Error: " (toString err)
-      in
-        ({ model | loader = AjaxLoader.hide model.loader }, Cmd.none)
-
     Scroll {scrolledHeight, contentHeight, containerHeight} ->
       let
         excessHeight = contentHeight - containerHeight
       in
         if scrolledHeight >= excessHeight then
-          ({ model | loader = AjaxLoader.show model.loader }, fetchLoremIpsum 1 False)
+          ({ model | loader = AjaxLoader.show model.loader }, Cmd.map ReceiveLoremIpsum (LoremIpsum.fetch 1 False))
         else
           (model, Cmd.none)
 
     LoaderNoOp _ ->
       (model, Cmd.none)
 
+    ReceiveLoremIpsum action ->
+      let
+        loader = AjaxLoader.hide model.loader
+      in
+        case LoremIpsum.receive action of
+          Just items ->
+            ({model | items = model.items ++ items, loader = loader }, Cmd.none)
 
-fetchLoremIpsum : Int -> Bool -> Cmd Action
-fetchLoremIpsum amount startWithLoremIpsum =
-  let
-    url = "http://lipsum.com/feed/json?what=paras"
-          ++ "&amount=" ++ (toString amount)
-          ++ "&start=" ++ (if startWithLoremIpsum then "yes" else "no")
-  in
-    Task.perform FetchFail FetchSucceed (Http.get decodeLoremIpsum url)
+          Nothing ->
+            ({model | loader = loader }, Cmd.none)
 
-
-decodeLoremIpsum : Json.Decoder (List String)
-decodeLoremIpsum =
-  Json.object1 (split "\n") lipsum
-
-lipsum : Json.Decoder String
-lipsum =
-  Json.at [ "feed", "lipsum" ] Json.string
 
 -- VIEW
 
@@ -160,4 +139,4 @@ init styles =
       , styles = styles
       }
   in
-    (model, fetchLoremIpsum 17 True)
+    (model, Cmd.map ReceiveLoremIpsum (LoremIpsum.fetch 17 True))
