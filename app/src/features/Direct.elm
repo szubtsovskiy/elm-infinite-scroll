@@ -44,8 +44,6 @@ type Action
 
 -- UPDATE
 
--- TODO next: how to handle decoding errors (e.g. when field does not exist)
-
 update : Action -> Model -> (Model, Cmd Action)
 update action model =
   case action of
