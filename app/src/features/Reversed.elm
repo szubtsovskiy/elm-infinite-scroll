@@ -9,7 +9,8 @@ import Json.Decode as Json
 import List exposing (map)
 import AjaxLoader
 import LoremIpsum
-import JavaScript
+import Native.Scroll
+import Task
 
 main : Program Styles
 main =
@@ -42,6 +43,8 @@ type Action
   = ReceiveLoremIpsum LoremIpsum.Action
   | Scroll Int
   | LoaderNoOp AjaxLoader.Action
+  | NativeScrollSuccess ()
+  | NativeScrollError String
 
 -- UPDATE
 
@@ -63,11 +66,23 @@ update action model =
       in
         case LoremIpsum.receive action of
           Just items ->
-            ({model | items = items ++ model.items, loader = loader }, JavaScript.scroll ("reversed-container", 40))
+            ({model | items = items ++ model.items, loader = loader }, Task.perform NativeScrollError NativeScrollSuccess (scrollBy "reversed-container" 40))
 
           Nothing ->
             ({model | loader = loader }, Cmd.none)
 
+    NativeScrollSuccess () ->
+      (model, Cmd.none)
+
+    NativeScrollError err ->
+      let
+        _ = Debug.log "NativeScroll error: " (toString err)
+      in
+        (model, Cmd.none)
+
+scrollBy : String -> Int -> Task.Task String ()
+scrollBy id height =
+  Native.Scroll.toY id height
 
 -- VIEW
 
