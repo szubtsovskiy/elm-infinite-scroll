@@ -9,7 +9,9 @@ import Json.Decode as Json
 import List exposing (map)
 import AjaxLoader
 import LoremIpsum
-import JavaScript
+import Dom
+import Dom.Scroll
+import Task
 
 main : Program Styles
 main =
@@ -42,6 +44,8 @@ type Action
   = ReceiveLoremIpsum LoremIpsum.Action
   | Scroll Int
   | LoaderNoOp AjaxLoader.Action
+  | DomError Dom.Error
+  | DomNoOp ()
 
 -- UPDATE
 
@@ -54,19 +58,28 @@ update action model =
       else
         (model, Cmd.none)
 
-    LoaderNoOp _ ->
-      (model, Cmd.none)
-
     ReceiveLoremIpsum action ->
       let
         loader = AjaxLoader.hide model.loader
       in
         case LoremIpsum.receive action of
           Just items ->
-            ({model | items = items ++ model.items, loader = loader }, JavaScript.scroll ("reversed-container", 40))
+            ({model | items = items ++ model.items, loader = loader }, Task.perform DomError DomNoOp (Dom.Scroll.toY "reversed-container" 40))
 
           Nothing ->
             ({model | loader = loader }, Cmd.none)
+
+    LoaderNoOp _ ->
+      (model, Cmd.none)
+
+    DomError err ->
+      let
+        _ = Debug.log "DOM error: " (toString err)
+      in
+        (model, Cmd.none)
+
+    DomNoOp _ ->
+      (model, Cmd.none)
 
 
 -- VIEW
