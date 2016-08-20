@@ -1,4 +1,4 @@
-module Direct exposing (main)
+module Reversed exposing (main)
 
 import Html exposing (..)
 import Html.App as App
@@ -8,7 +8,10 @@ import Platform exposing (Program)
 import Json.Decode as Json
 import List exposing (map)
 import AjaxLoader
-import LoremIpsum
+import Helpers.LoremIpsum as LoremIpsum
+import Dom
+import Dom.Scroll
+import Task
 
 main : Program Styles
 main =
@@ -39,25 +42,21 @@ type alias Pos =
 
 type Action
   = ReceiveLoremIpsum LoremIpsum.Action
-  | Scroll Pos
+  | Scroll Int
   | LoaderNoOp AjaxLoader.Action
+  | DomError Dom.Error
+  | DomNoOp ()
 
 -- UPDATE
 
 update : Action -> Model -> (Model, Cmd Action)
 update action model =
   case action of
-    Scroll {scrolledHeight, contentHeight, containerHeight} ->
-      let
-        excessHeight = contentHeight - containerHeight
-      in
-        if scrolledHeight >= excessHeight then
-          ({ model | loader = AjaxLoader.show model.loader }, Cmd.map ReceiveLoremIpsum (LoremIpsum.fetch 1 False))
-        else
-          (model, Cmd.none)
-
-    LoaderNoOp _ ->
-      (model, Cmd.none)
+    Scroll scrolledHeight ->
+      if scrolledHeight == 0 then
+        ({ model | loader = AjaxLoader.show model.loader }, Cmd.map ReceiveLoremIpsum (LoremIpsum.fetch 1 False))
+      else
+        (model, Cmd.none)
 
     ReceiveLoremIpsum action ->
       let
@@ -65,10 +64,22 @@ update action model =
       in
         case LoremIpsum.receive action of
           Just items ->
-            ({model | items = model.items ++ items, loader = loader }, Cmd.none)
+            ({model | items = items ++ model.items, loader = loader }, Task.perform DomError DomNoOp (Dom.Scroll.toY "reversed-container" 40))
 
           Nothing ->
             ({model | loader = loader }, Cmd.none)
+
+    LoaderNoOp _ ->
+      (model, Cmd.none)
+
+    DomError err ->
+      let
+        _ = Debug.log "DOM error: " (toString err)
+      in
+        (model, Cmd.none)
+
+    DomNoOp _ ->
+      (model, Cmd.none)
 
 
 -- VIEW
@@ -81,43 +92,20 @@ view model =
     styles = model.styles
   in
     div []
-    [ div [ class styles.container, onScroll Scroll ] (paras ++ [loader])
+    [ div [ id "reversed-container", class styles.container, onScroll Scroll ] ([loader] ++ paras)
     ]
 
 para : String -> Html Action
 para content =
   p [] [text content]
 
-onScroll : (Pos -> action) -> Attribute action
+onScroll : (Int -> action) -> Attribute action
 onScroll tagger =
-  on "scroll" (Json.map tagger decodeScrollPosition)
-
-decodeScrollPosition : Json.Decoder Pos
-decodeScrollPosition =
-  Json.object3 Pos
-    scrollTop
-    scrollHeight
-    (maxInt offsetHeight clientHeight)
+  on "scroll" (Json.map tagger scrollTop)
 
 scrollTop : Json.Decoder Int
 scrollTop =
   Json.at [ "target", "scrollTop" ] Json.int
-
-scrollHeight : Json.Decoder Int
-scrollHeight =
-  Json.at [ "target", "scrollHeight" ] Json.int
-
-offsetHeight : Json.Decoder Int
-offsetHeight =
-  Json.at [ "target", "offsetHeight" ] Json.int
-
-clientHeight : Json.Decoder Int
-clientHeight =
-  Json.at [ "target", "clientHeight" ] Json.int
-
-maxInt : Json.Decoder Int -> Json.Decoder Int -> Json.Decoder Int
-maxInt x y =
-  Json.object2 Basics.max x y
 
 -- SUBSCRIPTIONS
 

@@ -1,4 +1,4 @@
-module LoremIpsum exposing (Action, fetch, receive)
+module Helpers.LoremIpsum exposing (Action, fetch, receive)
 import Http
 import Task
 import Json.Decode as Json
