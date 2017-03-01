@@ -1,23 +1,23 @@
 module Direct exposing (main)
 
 import Html exposing (..)
-import Html.App as App
 import Html.Events exposing (onClick, on)
 import Html.Attributes exposing (..)
 import Platform exposing (Program)
 import Json.Decode as Json
-import List exposing (map)
 import AjaxLoader
 import Helpers.LoremIpsum as LoremIpsum
 
-main : Program Styles
+
+main : Program Styles Model Msg
 main =
-  App.programWithFlags
+  Html.programWithFlags
     { init = init
     , view = view
     , update = update
     , subscriptions = subscriptions
     }
+
 
 type alias Styles =
   { container : String
@@ -25,11 +25,13 @@ type alias Styles =
   , loaderIcon : String
   }
 
+
 type alias Model =
   { items : List String
   , loader : AjaxLoader.Model
   , styles : Styles
   }
+
 
 type alias Pos =
   { scrolledHeight : Int
@@ -37,97 +39,121 @@ type alias Pos =
   , containerHeight : Int
   }
 
-type Action
-  = ReceiveLoremIpsum LoremIpsum.Action
+
+type Msg
+  = ReceiveLoremIpsum LoremIpsum.Msg
   | Scroll Pos
-  | LoaderNoOp AjaxLoader.Action
+  | LoaderNoOp AjaxLoader.Msg
+
+
 
 -- UPDATE
 
-update : Action -> Model -> (Model, Cmd Action)
-update action model =
-  case action of
-    Scroll {scrolledHeight, contentHeight, containerHeight} ->
+
+update : Msg -> Model -> ( Model, Cmd Msg )
+update msg model =
+  case msg of
+    Scroll { scrolledHeight, contentHeight, containerHeight } ->
       let
-        excessHeight = contentHeight - containerHeight
+        excessHeight =
+          contentHeight - containerHeight
       in
         if scrolledHeight >= excessHeight then
-          ({ model | loader = AjaxLoader.show model.loader }, Cmd.map ReceiveLoremIpsum (LoremIpsum.fetch 1 False))
+          ( { model | loader = AjaxLoader.show model.loader }, Cmd.map ReceiveLoremIpsum (LoremIpsum.fetch 1 False) )
         else
-          (model, Cmd.none)
+          ( model, Cmd.none )
 
     LoaderNoOp _ ->
-      (model, Cmd.none)
+      ( model, Cmd.none )
 
-    ReceiveLoremIpsum action ->
+    ReceiveLoremIpsum msg ->
       let
-        loader = AjaxLoader.hide model.loader
+        loader =
+          AjaxLoader.hide model.loader
       in
-        case LoremIpsum.receive action of
+        case LoremIpsum.receive msg of
           Just items ->
-            ({model | items = model.items ++ items, loader = loader }, Cmd.none)
+            ( { model | items = model.items ++ items, loader = loader }, Cmd.none )
 
           Nothing ->
-            ({model | loader = loader }, Cmd.none)
+            ( { model | loader = loader }, Cmd.none )
+
 
 
 -- VIEW
 
-view : Model -> Html Action
+
+view : Model -> Html Msg
 view model =
   let
-    paras = map para model.items
-    loader = App.map LoaderNoOp (AjaxLoader.view model.loader)
-    styles = model.styles
+    paras =
+      List.map para model.items
+
+    loader =
+      Html.map LoaderNoOp (AjaxLoader.view model.loader)
+
+    styles =
+      model.styles
   in
     div []
-    [ div [ class styles.container, onScroll Scroll ] (paras ++ [loader])
-    ]
+      [ div [ class styles.container, onScroll Scroll ] (paras ++ [ loader ])
+      ]
 
-para : String -> Html Action
+
+para : String -> Html Msg
 para content =
-  p [] [text content]
+  p [] [ text content ]
+
 
 onScroll : (Pos -> action) -> Attribute action
 onScroll tagger =
   on "scroll" (Json.map tagger decodeScrollPosition)
 
+
 decodeScrollPosition : Json.Decoder Pos
 decodeScrollPosition =
-  Json.object3 Pos
-    scrollTop
-    scrollHeight
-    (maxInt offsetHeight clientHeight)
+  Json.map3 Pos scrollTop scrollHeight (maxInt offsetHeight clientHeight)
+
 
 scrollTop : Json.Decoder Int
 scrollTop =
   Json.at [ "target", "scrollTop" ] Json.int
 
+
 scrollHeight : Json.Decoder Int
 scrollHeight =
   Json.at [ "target", "scrollHeight" ] Json.int
+
 
 offsetHeight : Json.Decoder Int
 offsetHeight =
   Json.at [ "target", "offsetHeight" ] Json.int
 
+
 clientHeight : Json.Decoder Int
 clientHeight =
   Json.at [ "target", "clientHeight" ] Json.int
 
+
 maxInt : Json.Decoder Int -> Json.Decoder Int -> Json.Decoder Int
 maxInt x y =
-  Json.object2 Basics.max x y
+  Json.map2 Basics.max x y
+
+
 
 -- SUBSCRIPTIONS
 
-subscriptions : Model -> Sub Action
+
+subscriptions : Model -> Sub Msg
 subscriptions model =
   Sub.none
 
+
+
 -- INIT
 
-init : Styles -> (Model, Cmd Action)
+
+init : Styles -> ( Model, Cmd Msg )
 init styles =
   let
     model =
@@ -136,4 +162,4 @@ init styles =
       , styles = styles
       }
   in
-    (model, Cmd.map ReceiveLoremIpsum (LoremIpsum.fetch 17 True))
+    ( model, Cmd.map ReceiveLoremIpsum (LoremIpsum.fetch 17 True) )

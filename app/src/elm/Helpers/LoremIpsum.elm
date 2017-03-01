@@ -1,27 +1,28 @@
-module Helpers.LoremIpsum exposing (Action, fetch, receive)
+module Helpers.LoremIpsum exposing (Msg, fetch, receive)
 import Http
 import Task
 import Json.Decode as Json
 import String exposing (split)
 
-type Action
-  = FetchFail Http.Error
-  | FetchSucceed (List String)
+type Msg
+  = OnFetch (Result Http.Error (List String))
 
-receive : Action -> Maybe (List String)
-receive action =
-  case action of
-    FetchSucceed items ->
-      Just items
+receive : Msg -> Maybe (List String)
+receive msg =
+  case msg of
+    OnFetch result ->
+      case result of
+        Ok items ->
+          Just items
 
-    FetchFail err ->
-      let
-        _ =
-          Debug.log "Error: " (toString err)
-      in
-        Nothing
+        Err err ->
+          let
+            _ =
+              Debug.log "Error: " (toString err)
+          in
+            Nothing
 
-fetch : Int -> Bool -> Cmd Action
+fetch : Int -> Bool -> Cmd Msg
 fetch amount startWithLoremIpsum =
   let
     startParam = if startWithLoremIpsum then "yes" else "no"
@@ -29,12 +30,10 @@ fetch amount startWithLoremIpsum =
           ++ "&amount=" ++ (toString amount)
           ++ "&start=" ++ startParam
   in
-    Task.perform FetchFail FetchSucceed (Http.get decode url)
+    Http.get url loremIpsum
+      |> Http.send OnFetch
 
-decode : Json.Decoder (List String)
-decode =
-  Json.object1 (split "\n") lipsum
+loremIpsum : Json.Decoder (List String)
+loremIpsum =
+  Json.map (split "\n") <| Json.at [ "feed", "lipsum" ] Json.string
 
-lipsum : Json.Decoder String
-lipsum =
-  Json.at [ "feed", "lipsum" ] Json.string
