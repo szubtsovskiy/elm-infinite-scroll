@@ -25,6 +25,7 @@
     "dotenv": "^2.0.0",
     "elm": "^0.18.0",
     "elm-css-webpack-loader": "^2.0.2",
+    "elm-hot-loader": "^0.5.4",
     "elm-webpack-loader": "^4.2.0",
     "extract-text-webpack-plugin": "^1.0.1",
     "file-loader": "^0.9.0",
